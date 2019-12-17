@@ -64,7 +64,7 @@ def display():
         i += 1
     print(show) 
     T.insert("end", show)
-    root.after(500, display)
+    root.after(10, display)
 
 print("canlib version:", canlib.dllversion())
 
@@ -83,7 +83,6 @@ T.config(state="normal")
 T.pack()
  
 display()
-root.after(0, display)
 root.mainloop()     
 
 tearDownChannel(ch0)
