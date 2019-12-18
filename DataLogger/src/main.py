@@ -14,13 +14,14 @@ class App(tk.Tk):
 
         # Define any widgets
         self.text = tk.Text(self, height=6, width=60)
-        
+        self.text.pack()
 
     def quit(self):
         # Add here any shutdown related statements
         super().quit()
         
-self.ch0 = CanBus(channel=0)
+
+#self.ch0 = canbus(channel=0)
 
 if __name__ == "__main__":
     App().mainloop()

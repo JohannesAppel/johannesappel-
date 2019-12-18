@@ -17,15 +17,15 @@ class CanBus:
         self.ch.setBusParams(canlib.canBITRATE_500K)
         self.ch.busOn()
     
-def tearDownChannel(ch):
-    ch.busOff()
-    ch.close()
-
+    def tearDownChannel(self):
+        self.ch.busOff()
+        self.ch.close()
+    
 def text(t):
     tx = binascii.hexlify(t).decode('utf-8')
     n = 2
     txt = [tx[i:i+n] for i in range(0, len(tx), n)]
-    return txt
+    return txt  
 
 def counter(ch):
     try:
@@ -45,16 +45,14 @@ def counter(ch):
     return cnt
 
 
-print("canlib version:", canlib.dllversion())
-
-cnt = counter()
-print("Counter: %d" %(cnt))  
-
-tearDownChannel(ch0)
- 
 if __name__ == "__main__":
+    print("canlib version:", canlib.dllversion())
+    cnt = counter()
+    print("Counter: %d" %(cnt))  
+    
     cbus = CanBus(channel=0)
     # Read from the canbus
+    
     i = 0
     show = ""
     while i <= 4:
@@ -62,4 +60,6 @@ if __name__ == "__main__":
         frame = cbus.read()
         show = show + ("%s\t%s\n" %(frame.id, text(frame.data)))
         print(show)
-        i += 1
+        i += 1   
+        
+    cbus.tear_down()
