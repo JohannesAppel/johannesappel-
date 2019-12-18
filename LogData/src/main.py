@@ -6,13 +6,13 @@ Created on Dec 10, 2019
 import keyboard
 import time
 import sys
-import tkinter as tk
+#import tkinter as tk
 import binascii
 
 from canlib import canlib, Frame
 from canlib.canlib import ChannelData
 
-root = tk.Tk()
+#root = tk.Tk()
 
 def setUpChannel(channel,
                  openFlags=canlib.canOPEN_ACCEPT_VIRTUAL,
@@ -39,32 +39,46 @@ def text(t):
 
 def counter():
     try:
-        cnt = 1
+        cnt = 0
         frame = ch0.read()
         firstID = frame.id
         while True:
             frame = ch0.read()
             cnt += 1
             if frame.id == firstID:
-                break
-        pass    
+                break 
     except (canlib.canNoMsg):
         pass
     except (canlib.canError):
-        print("Rerun")
+        pass
     return cnt
 
-def display():
-    T.delete("1.0", "end")
+def display(cnt):
+#    T.delete("1.0", "end")
     show = ""
     i = 1
-    while i <= 4:
-        frame = ch0.read()
-        show = show + ("%s\t%s\n" %(frame.id, text(frame.data)))
-        i += 1
-    print(show) 
-    T.insert("end", show)
-    root.after(10, display)
+    while i <= cnt:
+        try:
+            frame = ch0.read()
+            show = show + ("%s\t%s\n" %(frame.id, text(frame.data)))
+            i += 1
+#             if i == 3:
+#                 print(show)
+#             i += 1
+        except (canlib.canNoMsg):
+            pass
+    print(show)            
+#    T.insert("end", show)
+#    root.after(10, display)
+
+def cycle(cnt):
+    while True:
+        try:
+            frame = ch0.read()
+            if frame.id == cnt:
+                break
+        except (canlib.canNoMsg):
+            pass
 
 print("canlib version:", canlib.dllversion())
 
@@ -78,12 +92,16 @@ ch1 = setUpChannel(channel=1)
 cnt = counter()
 print("Counter: %d" %(cnt))
 
-T = tk.Text(root, height=6, width=60)
-T.config(state="normal")
-T.pack()
- 
-display()
-root.mainloop()     
+# T = tk.Text(root, height=6, width=60)
+# T.config(state="normal")
+# T.pack()
+
+cycle(cnt)
+
+while True:
+    display(cnt)
+    
+#root.mainloop()     
 
 tearDownChannel(ch0)
 tearDownChannel(ch1)
