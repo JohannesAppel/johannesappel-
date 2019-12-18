@@ -20,38 +20,37 @@ class CanBus:
     def tearDownChannel(self):
         self.ch.busOff()
         self.ch.close()
-    
+        
+    def counter(self):
+        try:
+            cnt = 0
+            frame = self.ch.read()
+            firstID = frame.id
+            while True:
+                frame = self.ch.read()
+                cnt += 1
+                if frame.id == firstID:
+                    break
+                    
+        except (canlib.canNoMsg):
+            pass
+        except (canlib.canError):
+            pass
+        return cnt
+
 def text(t):
     tx = binascii.hexlify(t).decode('utf-8')
     n = 2
     txt = [tx[i:i+n] for i in range(0, len(tx), n)]
     return txt  
 
-def counter(ch):
-    try:
-        cnt = 1
-        frame = ch.read()
-        firstID = frame.id
-        while True:
-            frame = ch.read()
-            cnt += 1
-            if frame.id == firstID:
-                break
-        pass    
-    except (canlib.canNoMsg):
-        pass
-    except (canlib.canError):
-        print("Rerun")
-    return cnt
-
-
 if __name__ == "__main__":
     print("canlib version:", canlib.dllversion())
-    cnt = counter()
-    print("Counter: %d" %(cnt))  
     
+    # Read from the canbus    
     cbus = CanBus(channel=0)
-    # Read from the canbus
+    cnt = cbus.counter()
+    print("Counter: %d" %(cnt)) 
     
     i = 0
     show = ""
