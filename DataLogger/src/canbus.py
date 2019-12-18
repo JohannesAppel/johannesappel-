@@ -8,7 +8,8 @@ from canlib import canlib, Frame
 from canlib.canlib import ChannelData 
 
 class CanBus:
-    def __init__(self, channel):
+    def __init__(self, channel, cnt=4):
+        self.cnt = cnt
         self.ch = canlib.openChannel(channel, canlib.canOPEN_ACCEPT_VIRTUAL)
         print("Using channel: %s, EAN: %s" % (ChannelData(channel).channel_name,
                                               ChannelData(channel).card_upc_no)
@@ -37,6 +38,12 @@ class CanBus:
         except (canlib.canError):
             pass
         return cnt
+    
+    def read_frame(self):
+        frame = []
+        for _ in range(self.cnt + 1):
+            frame.append(self.ch.read())
+        return frame
 
 def text(t):
     tx = binascii.hexlify(t).decode('utf-8')
@@ -54,11 +61,11 @@ if __name__ == "__main__":
     
     i = 0
     show = ""
-    while i <= 4:
+    while i <= cbus.cnt:
         show = ""
-        frame = cbus.read()
+        frame = cbus.ch.read()
         show = show + ("%s\t%s\n" %(frame.id, text(frame.data)))
         print(show)
         i += 1   
         
-    cbus.tear_down()
+    cbus.tearDownChannel()
