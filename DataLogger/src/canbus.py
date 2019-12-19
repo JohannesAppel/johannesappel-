@@ -27,9 +27,9 @@ class CanBus(threading.Thread):
     def get(self):
         # None blocking get
         try:
-           data = self.queue.get(False)
-        except ???.QueueEmpty:
-           return None
+            data = self.queue.get(False)
+        except queue.Empty:
+            return None
         return data
         
     def stop(self):
@@ -40,7 +40,20 @@ class CanBus(threading.Thread):
     
 
     def run(self):
-        # copy my sceleton
+        while self._is_alive.is_set():
+            item = None
+            try:
+                item = cbus.ch.read()
+            except (canlib.canNoMsg):
+                pass
+            except:  # Break at unknow error
+                self._is_alive.clear()
+                continue
+    
+        if item is not None:
+            # Possible to decode data before
+            # item.data = text(item.data)
+            self.queue.put(item)
     
     def tearDownChannel(self):
         self.ch.busOff()
