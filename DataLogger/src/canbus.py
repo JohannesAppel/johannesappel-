@@ -31,8 +31,7 @@ class CanBus:
                 frame = self.ch.read()
                 cnt += 1
                 if frame.id == firstID:
-                    break
-                    
+                    break                    
         except (canlib.canNoMsg):
             pass
         except (canlib.canError):
@@ -41,7 +40,7 @@ class CanBus:
     
     def read_frame(self):
         frame = []
-        for _ in range(self.cnt + 1):
+        for _ in range(self.cnt):
             frame.append(self.ch.read())
         return frame
 
@@ -56,16 +55,19 @@ if __name__ == "__main__":
     
     # Read from the canbus    
     cbus = CanBus(channel=0)
-    cnt = cbus.counter()
-    print("Counter: %d" %(cnt)) 
+#     cbus.cnt = cbus.counter()
+#     print("Counter: %d" %(cbus.cnt)) 
     
     i = 0
     show = ""
-    while i <= cbus.cnt:
-        show = ""
-        frame = cbus.ch.read()
-        show = show + ("%s\t%s\n" %(frame.id, text(frame.data)))
-        print(show)
-        i += 1   
+    while i <= 4:
+        try:
+            show = ""
+            frame = cbus.ch.read()
+            show = show + ("%s\t%s\n" %(frame.id, text(frame.data)))
+            print(show)
+            i += 1
+        except (canlib.canNoMsg):
+            pass
         
     cbus.tearDownChannel()
