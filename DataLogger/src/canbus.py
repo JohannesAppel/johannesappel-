@@ -46,16 +46,20 @@ class CanBus(threading.Thread):
             try:
                 item = self.ch.read()
             except (canlib.canNoMsg):
+                self.queue.put('except canlib.canNoMsg')
                 pass
-            except:  # Break at unknow error
+            except Exception as e:  # Break at unknow error
+                self.queue.put(e)
                 self.stop()
                 continue
     
-        if item is not None:
+            if item is not None:
             # Possible to decode data before
             # item.data = text(item.data)
-            print('\tqueue.put({})'.format(item))
-            self.queue.put(item)
+                print('\tqueue.put({})'.format(item))
+                self.queue.put(item)
+            else:
+                self.queue.put('item is None')
     
     def tearDownChannel(self):
         self.ch.busOff()
