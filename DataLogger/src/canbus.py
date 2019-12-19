@@ -58,16 +58,21 @@ if __name__ == "__main__":
 #     cbus.cnt = cbus.counter()
 #     print("Counter: %d" %(cbus.cnt)) 
     
-    i = 0
+    j = 0
     show = ""
-    while i <= 4:
+    while j < 4:
+        frame = None
         try:
-            show = ""
             frame = cbus.ch.read()
-            show = show + ("%s\t%s\n" %(frame.id, text(frame.data)))
-            print(show)
-            i += 1
         except (canlib.canNoMsg):
             pass
+        
+        print(j)
+        if frame is not None:
+            print("%s\t%s\n" %(frame.id, text(frame.data)))
+        j += 1
+#             show = show + ("%s\t%s\n" %(frame.id, text(frame.data)))
+#             print(show)
+        
         
     cbus.tearDownChannel()
