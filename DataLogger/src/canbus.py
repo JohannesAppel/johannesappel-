@@ -4,9 +4,10 @@
 # @author: Hex
 # '''
 import binascii
-from canlib import canlib, Frame
+from canlib import canlib
 from canlib.canlib import ChannelData 
 import threading, queue
+import time
 
 class CanBus(threading.Thread):
     def __init__(self, channel, cnt=4):
@@ -35,7 +36,7 @@ class CanBus(threading.Thread):
     def stop(self):
         print('CanBus.stop()')
         self._is_alive.clear()
-        while not self.queue.is_empty():
+        while not self.queue.empty():
             self.queue.get()
     
 
@@ -43,16 +44,17 @@ class CanBus(threading.Thread):
         while self._is_alive.is_set():
             item = None
             try:
-                item = cbus.ch.read()
+                item = self.ch.read()
             except (canlib.canNoMsg):
                 pass
             except:  # Break at unknow error
-                self._is_alive.clear()
+                self.stop()
                 continue
     
         if item is not None:
             # Possible to decode data before
             # item.data = text(item.data)
+            print('\tqueue.put({})'.format(item))
             self.queue.put(item)
     
     def tearDownChannel(self):
@@ -114,12 +116,18 @@ if __name__ == "__main__":
 
     cbus.start()
     # For testing we need to terminate the `Thread`
+    none_count = 0
     max_frames = 100
     for _ in range(max_frames):
+        time.sleep(0.1)
         frame = cbus.get()
-        print(frame)
+        if frame is None:
+            none_count +=1
+        else:
+            print(frame)
+        
     cbus.stop()
-    print('EXIT')
+    print('EXIT, none_count:{}'.format(none_count))
         
         
     cbus.tearDownChannel()
