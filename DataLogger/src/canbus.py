@@ -24,6 +24,7 @@ class CanBus(threading.Thread):
         self.queue = queue.Queue()
         self._is_alive = threading.Event()
         self._is_alive.set()
+        self.frame_count = 0
         
     def get(self):
         # None blocking get
@@ -36,7 +37,7 @@ class CanBus(threading.Thread):
     def stop(self):
         print('CanBus.stop()')
         self._is_alive.clear()
-        time.sleep(0.1)
+        time.sleep(0.01)
         while not self.queue.empty():
             self.queue.get()
     
@@ -46,6 +47,7 @@ class CanBus(threading.Thread):
             item = None
             try:
                 item = self.ch.read()
+                self.frame_count += 1
             except (canlib.canNoMsg):
                 #self.queue.put('except canlib.canNoMsg')
                 pass
@@ -123,17 +125,17 @@ if __name__ == "__main__":
     cbus.start()
     # For testing we need to terminate the `Thread`
     none_count = 0
-    max_frames = 10000
+    max_frames = 1000
     for _ in range(max_frames):
-        time.sleep(0.1)
+        time.sleep(0.01)
         frame = cbus.get()
         if frame is None:
             none_count +=1
         else:
-            print(frame)
+            print(type(frame))
         
     cbus.stop()
-    print('EXIT, none_count:{}'.format(none_count))
+    print('EXIT, frame_count:{}'.format(cbus.frame_count))
         
         
     cbus.tearDownChannel()
