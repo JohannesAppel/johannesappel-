@@ -28,10 +28,10 @@ class App(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self.quit)
 
         # Define any widgets
+        self.cbus = CanBus(channel=0)
         self.frame_listbox = FrameListbox(self, lines=self.cbus.cnt, height=6, width=60)
         self.frame_listbox.pack()
         self.none_count = 0
-        self.cbus = CanBus(channel=0)
         self.cbus.start()
         self.after(10, self.display)
 
