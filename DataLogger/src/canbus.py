@@ -36,6 +36,7 @@ class CanBus(threading.Thread):
     def stop(self):
         print('CanBus.stop()')
         self._is_alive.clear()
+        time.sleep(0.1)
         while not self.queue.empty():
             self.queue.get()
     
@@ -46,7 +47,7 @@ class CanBus(threading.Thread):
             try:
                 item = self.ch.read()
             except (canlib.canNoMsg):
-                self.queue.put('except canlib.canNoMsg')
+                #self.queue.put('except canlib.canNoMsg')
                 pass
             except Exception as e:  # Break at unknow error
                 self.queue.put(e)
@@ -56,10 +57,11 @@ class CanBus(threading.Thread):
             if item is not None:
             # Possible to decode data before
             # item.data = text(item.data)
-                print('\tqueue.put({})'.format(item))
+                #print('\tqueue.put({})'.format(item))
                 self.queue.put(item)
             else:
-                self.queue.put('item is None')
+                #self.queue.put('item is None')
+                pass
     
     def tearDownChannel(self):
         self.ch.busOff()
@@ -121,7 +123,7 @@ if __name__ == "__main__":
     cbus.start()
     # For testing we need to terminate the `Thread`
     none_count = 0
-    max_frames = 100
+    max_frames = 10000
     for _ in range(max_frames):
         time.sleep(0.1)
         frame = cbus.get()
