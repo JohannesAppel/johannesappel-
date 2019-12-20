@@ -46,7 +46,7 @@ class App(tk.Tk):
         if self.cbus.is_alive():
             frame = self.cbus.get()
             if frame is not None:
-                self.frame_listbox.insert(tk.END, "%s\t%s\n" %(frame.id, frame.data))
+                self.frame_listbox.insert("{:<5} {}".format(frame.id, frame.data))
             else:
                 self.none_count += 1
 
