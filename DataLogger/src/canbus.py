@@ -99,7 +99,6 @@ def text(t):
 
 def read4(cbus):
     j = 0
-    show = ""
     while j < 4:
         frame = None
         try:
@@ -132,7 +131,7 @@ if __name__ == "__main__":
         if frame is None:
             none_count +=1
         else:
-            print(type(frame))
+            print(frame.data)
         
     cbus.stop()
     print('EXIT, frame_count:{}'.format(cbus.frame_count))

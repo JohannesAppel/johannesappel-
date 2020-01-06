@@ -8,7 +8,7 @@ import tkinter as tk
 from canbus import CanBus
 
 class FrameListbox(tk.Listbox):
-    def __init__(self, parent, lines=4, **kwargs):
+    def __init__(self, parent, lines=9, **kwargs):
         super().__init__(parent, font=('Consolas', 10), **kwargs)
 
         self._lines_to_show = lines
@@ -33,7 +33,7 @@ class App(tk.Tk):
         self.frame_listbox.pack()
         self.none_count = 0
         self.cbus.start()
-        self.after(10, self.display)
+        self.after(1, self.display)
 
     def quit(self):
         # Add here any shutdown related statements
@@ -50,7 +50,7 @@ class App(tk.Tk):
             else:
                 self.none_count += 1
 
-            self.after(10, self.display)    
+            self.after(1, self.display)    
 
 #self.ch0 = canbus(channel=0)
 
