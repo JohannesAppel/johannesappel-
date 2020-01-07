@@ -10,17 +10,17 @@ import threading, queue
 import time
 
 class CanBus(threading.Thread):
-    def __init__(self, channel, cnt=counter()):
+    def __init__(self, channel, cnt):
         super().__init__()
         
-        self.cnt = cnt
+        #self.cnt = cnt
         self.ch = canlib.openChannel(channel, canlib.canOPEN_ACCEPT_VIRTUAL)
         print("Using channel: %s, EAN: %s" % (ChannelData(channel).channel_name,
                                               ChannelData(channel).card_upc_no))
         self.ch.setBusOutputControl(canlib.canDRIVER_NORMAL)
         self.ch.setBusParams(canlib.canBITRATE_500K)
         self.ch.busOn()
-        
+        self.cnt = cbus.counter()
         self.queue = queue.Queue()
         self._is_alive = threading.Event()
         self._is_alive.set()
@@ -38,6 +38,7 @@ class CanBus(threading.Thread):
         print('CanBus.stop()')
         self._is_alive.clear()
         time.sleep(0.01)
+        print('Trashed frames:{}'.format(self.queue.qsize()))
         while not self.queue.empty():
             self.queue.get()
     
@@ -47,6 +48,7 @@ class CanBus(threading.Thread):
             item = None
             try:
                 item = self.ch.read()
+                self.queue.put(item)
                 self.frame_count += 1
             except (canlib.canNoMsg):
                 #self.queue.put('except canlib.canNoMsg')
@@ -56,14 +58,14 @@ class CanBus(threading.Thread):
                 self.stop()
                 continue
     
-            if item is not None:
-            # Possible to decode data before
-            # item.data = text(item.data)
-                #print('\tqueue.put({})'.format(item))
-                self.queue.put(item)
-            else:
-                #self.queue.put('item is None')
-                pass
+#             if item is not None:
+#             # Possible to decode data before
+#             # item.data = text(item.data)
+#                 #print('\tqueue.put({})'.format(item))
+#                 self.queue.put(item)
+#             else:
+#                 #self.queue.put('item is None')
+#                 pass
     
     def tearDownChannel(self):
         self.ch.busOff()
@@ -118,7 +120,7 @@ if __name__ == "__main__":
     
     # Read from the canbus    
     cbus = CanBus(channel=0)
-#     cbus.cnt = cbus.counter()
+
 #     print("Counter: %d" %(cbus.cnt)) 
 
     cbus.start()
