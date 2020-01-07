@@ -34,7 +34,8 @@ def tearDownChannel(ch):
 def text(t):
     tx = binascii.hexlify(t).decode('utf-8')
     n = 2
-    txt = [tx[i:i+n] for i in range(0, len(tx), n)]
+    temp = [tx[i:i+n] for i in range(0, len(tx), n)]
+    txt = ', '.join(temp)
     return txt
 
 def counter():
@@ -74,24 +75,33 @@ def counter():
 
 def display():
     T.delete("1.0", "end")
-    dispList = [[],[]]
-    show = ""
-    i = 1
-    while i <= cnt:
-        try:
-            frame = ch0.read()
-            if frame.id not in dispList:
-                dispList.extend([frame.id, frame.data])
-            else:
-                inx = dispList.index(frame.id)
-                dispList[inx] = [frame.id], [frame.data]
-                #dispList()
-            #print(dispList)
-            show = show + ("%s\t%s\n" %(frame.id, text(frame.data)))
-            i += 1             
-        except (canlib.canNoMsg):
-            pass
-    print(show)
+    show = "%s\t%s" %("ID:", "Data:")
+    try:
+        frame = ch0.read()
+    except (canlib.canNoMsg): 
+        print('Error')
+        
+    if frame.id in dispList1:
+        inx = dispList1.index(frame.id)
+        dispList1[inx] = frame.id
+        dispList2[inx] = text(frame.data)
+    else:
+        dispList1.extend([frame.id])
+        dispList2.extend([text(frame.data)])
+    
+#     for j in range(len(dispList1)+1):
+#         if j > 1:
+#             if dispList1[j] < dispList1[j+1]:
+#                 temp = dispList1[j, 0];
+#                 dispList1[j] = dispList1[j+1];
+#                 dispList1[j+1] = temp;
+#   
+#                 temp = dispList2[j];
+#                 dispList2[j] = dispList2[j+1];
+#                 dispList2[j+1] = temp;
+            
+    for i in range(len(dispList1)):
+        show = show + ("\n%s\t%s" %(dispList1[i], dispList2[i]))
     T.insert("end", show)
     root.after(1, display)
 
@@ -108,16 +118,21 @@ print("canlib version:", canlib.dllversion())
 
 ch0 = setUpChannel(channel=0)
 
-cnt = counter()
-print("Counter: %d" %(cnt))
+#cnt = counter()
+#print("Counter: %d" %(cnt))
 
-T = tk.Text(root, height=20, width=100)
+T = tk.Text(root, height=11, width=60)
 T.config(state="normal")
 T.pack()
 
 #cycle()
 
-display() 
+listCnt = []
+
+dispList1 = []
+dispList2 = []
+
+display()
 root.mainloop()     
 
 tearDownChannel(ch0)
