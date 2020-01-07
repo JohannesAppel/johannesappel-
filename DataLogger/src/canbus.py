@@ -10,7 +10,7 @@ import threading, queue
 import time
 
 class CanBus(threading.Thread):
-    def __init__(self, channel, cnt=4):
+    def __init__(self, channel, cnt=counter()):
         super().__init__()
         
         self.cnt = cnt
@@ -126,12 +126,13 @@ if __name__ == "__main__":
     none_count = 0
     max_frames = 1000
     for _ in range(max_frames):
-        time.sleep(0.01)
+        time.sleep(0.005)
         frame = cbus.get()
         if frame is None:
             none_count +=1
         else:
-            print(frame.data)
+            #print(frame.data)
+            pass
         
     cbus.stop()
     print('EXIT, frame_count:{}'.format(cbus.frame_count))
