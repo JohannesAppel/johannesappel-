@@ -55,10 +55,17 @@ def display():
     else:
         dispList1.extend([frame.id])
         dispList2.extend([text(frame.data)])
+
+    for j in range(len(dispList1)-1):
+        if dispList1[j] > dispList1[j+1]:
+            temp = dispList1[j];
+            dispList1[j] = dispList1[j+1];
+            dispList1[j+1] = temp;
     
-#     tempList = sorted(zip(dispList1, dispList2))
-#     dispList1, dispList2 = map(list, zip(*tempList))
-            
+            temp = dispList2[j];
+            dispList2[j] = dispList2[j+1];
+            dispList2[j+1] = temp;
+
     for i in range(len(dispList1)):
         show = show + ("\n%s\t%s" %(dispList1[i], dispList2[i]))
     T.insert("end", show)
@@ -70,8 +77,6 @@ ch0 = setUpChannel(channel=0)
 T = tk.Text(root, height=11, width=60)
 T.config(state="normal")
 T.pack()
-
-listCnt = []
 
 dispList1 = []
 dispList2 = []
