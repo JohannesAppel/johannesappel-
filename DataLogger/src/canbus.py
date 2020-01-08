@@ -10,7 +10,7 @@ import threading, queue
 import time
 
 class CanBus(threading.Thread):
-    def __init__(self, channel, cnt):
+    def __init__(self, channel, cnt=9):
         super().__init__()
         
         #self.cnt = cnt
@@ -20,7 +20,7 @@ class CanBus(threading.Thread):
         self.ch.setBusOutputControl(canlib.canDRIVER_NORMAL)
         self.ch.setBusParams(canlib.canBITRATE_500K)
         self.ch.busOn()
-        self.cnt = cbus.counter()
+        self.cnt = self.counter()
         self.queue = queue.Queue()
         self._is_alive = threading.Event()
         self._is_alive.set()
@@ -50,6 +50,7 @@ class CanBus(threading.Thread):
                 item = self.ch.read()
                 self.queue.put(item)
                 self.frame_count += 1
+                time.sleep(0.005)
             except (canlib.canNoMsg):
                 #self.queue.put('except canlib.canNoMsg')
                 pass
