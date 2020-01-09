@@ -94,25 +94,25 @@ class CanBus(threading.Thread):
             frame.append(self.ch.read())
         return frame
 
-def text(t):
-    tx = binascii.hexlify(t).decode('utf-8')
-    n = 2
-    txt = [tx[i:i+n] for i in range(0, len(tx), n)]
-    return txt  
+    def text(self, t):
+        tx = binascii.hexlify(t).decode('utf-8')
+        n = 2
+        txt = [tx[i:i+n] for i in range(0, len(tx), n)]
+        return txt  
 
-def read4(cbus):
-    j = 0
-    while j < 4:
-        frame = None
-        try:
-            frame = cbus.ch.read()
-        except (canlib.canNoMsg):
-            pass
-        
-        print(j)
-        if frame is not None:
-            print("%s\t%s\n" %(frame.id, text(frame.data)))
-        j += 1
+# def read4(cbus):
+#     j = 0
+#     while j < 4:
+#         frame = None
+#         try:
+#             frame = cbus.ch.read()
+#         except (canlib.canNoMsg):
+#             pass
+#         
+#         print(j)
+#         if frame is not None:
+#             print("%s\t%s\n" %(frame.id, text(frame.data)))
+#         j += 1
 #        show = show + ("%s\t%s\n" %(frame.id, text(frame.data)))
 #        print(show)
 
