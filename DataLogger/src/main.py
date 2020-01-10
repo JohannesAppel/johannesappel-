@@ -42,7 +42,7 @@ class App(tk.Tk):
         # Add here any shutdown related statements
         self.cbus.stop()
         self.cbus.tearDownChannel()
-        print('EXIT, none_count:{}'.format(self.none_count))
+        print('EXIT, frame_count:{}, none_count:{}, trashed_count:{}'.format(self.cbus.frame_count, self.none_count, self.cbus.trashed_count)) 
         super().quit()
         
     def display(self):
