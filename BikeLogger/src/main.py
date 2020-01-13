@@ -3,18 +3,16 @@ Created on Jan 7, 2020
 
 @author: Johannes Appel
 '''
-
-'''
-Created on Dec 10, 2019
-
-@author: Johannes Appel
-'''
+import time
 import tkinter as tk
 import binascii
 
 from canlib import canlib
 from canlib.canlib import ChannelData
 root = tk.Tk()
+
+dispList1 = []
+dispList2 = []
 
 def setUpChannel(channel,
                  openFlags=canlib.canOPEN_ACCEPT_VIRTUAL,
@@ -40,14 +38,13 @@ def text(t):
     txt = ', '.join(temp)
     return txt
 
-def display():
+def display():    
     T.delete("1.0", "end")
     show = "%s\t%s" %("ID:", "Data:")
     try:
         frame = ch0.read()
     except (canlib.canNoMsg): 
         print('Error')
-        
     if frame.id in dispList1:
         inx = dispList1.index(frame.id)
         dispList1[inx] = frame.id
@@ -74,12 +71,10 @@ def display():
 print("canlib version:", canlib.dllversion())
 ch0 = setUpChannel(channel=0)
 
-T = tk.Text(root, height=11, width=60)
+root.title('Log Data')
+T = tk.Text(root, height=11, width=40)
 T.config(state="normal")
 T.pack()
-
-dispList1 = []
-dispList2 = []
 
 display()
 root.mainloop()     
