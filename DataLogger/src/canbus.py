@@ -20,11 +20,11 @@ class CanBus(threading.Thread):
         self.ch.setBusOutputControl(canlib.canDRIVER_NORMAL)
         self.ch.setBusParams(canlib.canBITRATE_500K)
         self.ch.busOn()
-        self.cnt = self.counter()
+        #self.cnt = self.counter()
         self.queue = queue.Queue()
         self._is_alive = threading.Event()
         self._is_alive.set()
-        self.frame_count = 0
+        self.frame_count = None
         
     def get(self):
         # None blocking get
@@ -38,7 +38,8 @@ class CanBus(threading.Thread):
         print('CanBus.stop()')
         self._is_alive.clear()
         time.sleep(0.01)
-        print('Trashed frames:{}'.format(self.queue.qsize()))
+        self.trashed_count = self.queue.qsize()
+        #print('Trashed frames:{}'.format(self.queue.qsize()))
         while not self.queue.empty():
             self.queue.get()
     
@@ -50,7 +51,7 @@ class CanBus(threading.Thread):
                 item = self.ch.read()
                 self.queue.put(item)
                 self.frame_count += 1
-                time.sleep(0.005)
+                time.sleep(0.05)
             except (canlib.canNoMsg):
                 #self.queue.put('except canlib.canNoMsg')
                 pass
