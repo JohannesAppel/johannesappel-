@@ -137,7 +137,7 @@ def secondRun():
     print(dispListSec2)
     indexFind = find()
     print("The ID of the control unit is: ", (indexFind[0]))
-    print("The position of the byte is: ", indexFind[1])
+    print("The position of the byte is: ", (indexFind[1]))
           
 root = tk.Tk()
 root.title('Data Logger')
