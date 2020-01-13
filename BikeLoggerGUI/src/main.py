@@ -10,8 +10,8 @@ import time
 
 from canlib import canlib
 from canlib.canlib import ChannelData
-from macpath import split
-from keyboard._nixmouse import display
+from tkinter import *
+from tkinter.ttk import *
 
 
 def setUpChannel(channel,
@@ -90,13 +90,23 @@ def test(indx, txt):
     listSec2 = ','.join(spl)
     return listSec2
 
-def run():
-    print('Running...')
+def resetData():
+    del dispListRun1[:]
+    del dispListRun2[:]
+    del dispListSec1[:]
+    del dispListSec2[:]
+
+def run():    
+    resetData()
+    val = 0
+    var.set('Running...')
+    root.update()
     ch0 = setUpChannel(channel=0)
     cnt = 0
-    while cnt < 5000:
+    while cnt < 2000:
         try:
             frame = ch0.read()
+            cnt += 1
         except (canlib.canNoMsg):
             pass
             #print('Error')
@@ -107,20 +117,30 @@ def run():
         else:
             dispListRun1.extend([frame.id])
             dispListRun2.extend([text(frame.data)])
-        cnt += 1
+        
         sortRun()
+        val = cnt/20
+        progress['value'] = val
+        root.update()
     tearDownChannel(ch0)
-    print('Turn on desired control unit and press done.')
+    var.set('Turn on desired control unit and press done.')
+    done.pack(side=tk.BOTTOM)
+    root.update()
     print(dispListRun2)
     
 def secondRun():
-    print('Running...')
+    val = 0
+    done.pack_forget()
+    var.set('')
+    var.set('Running...')
+    root.update()
     ch0 = setUpChannel(channel=0)
     cnt = 0
-    while cnt < 5000:
+    while cnt < 2000:
         try:
             frame = ch0.read()
-        except (canlib.canNoMsg): 
+            cnt += 1
+        except (canlib.canNoMsg):
             pass
             #print('Error')
         if frame.id in dispListSec1:
@@ -130,17 +150,27 @@ def secondRun():
         else:
             dispListSec1.extend([frame.id])
             dispListSec2.extend([text(frame.data)])
-        cnt += 1
+        
         sortSec()
+        val = cnt/20
+        progress['value'] = val
+        root.update()
     tearDownChannel(ch0)
     print('Done.')
     print(dispListSec2)
     indexFind = find()
-    print("The ID of the control unit is: ", (indexFind[0]))
-    print("The position of the byte is: ", (indexFind[1]))
-          
+    var.set("The ID of the control unit is: %d\nThe position of the byte is: %d" % (indexFind[0], indexFind[1]+1))
+    root.update()
+    
 root = tk.Tk()
 root.title('Data Logger')
+var = StringVar()
+var.set('Select an option.')
+L = Label(root, textvariable = var)
+L.pack()
+
+progress = Progressbar(root, orient = HORIZONTAL, length = 100, mode = 'determinate')
+progress.pack(pady = 10)
 
 dispListRun1 = []
 dispListRun2 = []
@@ -148,15 +178,17 @@ dispListSec1 = []
 dispListSec2 = []
 
 frame = tk.Frame(root)
-frame.pack()
+frame.pack(fill=None, expand=False)
 
-button = tk.Button(frame, text="QUIT", fg="red", command=quit)
-button.pack(side=tk.LEFT)
+button = tk.Button(frame, text="Quit", fg="red", command=quit)
+button.pack(side=tk.RIGHT)
 
 slogan = tk.Button(frame, text="Run", command=run)
 slogan.pack(side=tk.LEFT)
 
-done = tk.Button(frame, text="Done", command=secondRun)
-done.pack(side=tk.LEFT)
+done = tk.Button(root, text="Done", command=secondRun)
+
+# done = tk.Button(frame, text="Done", command=secondRun)
+# done.pack(side=tk.LEFT)
     
 root.mainloop()
