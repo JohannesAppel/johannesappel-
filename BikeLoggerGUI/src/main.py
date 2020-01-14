@@ -30,7 +30,10 @@ def setUpChannel(channel,
 def tearDownChannel(ch):
     ch.busOff()
     ch.close()
-    
+
+def desQuit():
+    root.destroy()
+
 def sortRun():
     for j in range(len(dispListRun1)-1):
         if dispListRun1[j] > dispListRun1[j+1]:
@@ -72,6 +75,8 @@ def returning(indx, txt):
 def find():
     id_index = 0
     byte_index = 0
+    first_byte = 0
+    second_byte = 0
     for j in range (len(dispListRun1)):
         dispR = dispListRun2[j].split(",")
         dispS = dispListSec2[j].split(",")
@@ -79,7 +84,9 @@ def find():
             if dispR[x] != dispS[x] and dispR[x] != 'XX':
                 id_index = dispListRun1[j]
                 byte_index = x
-    return id_index, byte_index
+                first_byte = dispR[x]
+                second_byte = dispS[x]
+    return id_index, byte_index, first_byte, second_byte
 
 def test(indx, txt):
     spl = text(txt).split(",")
@@ -96,10 +103,9 @@ def resetData():
     del dispListSec1[:]
     del dispListSec2[:]
 
-def run():    
+def calibrate():    
     resetData()
-    val = 0
-    var.set('Running...')
+    var.set('Calibrating...')
     root.update()
     ch0 = setUpChannel(channel=0)
     cnt = 0
@@ -128,10 +134,8 @@ def run():
     root.update()
     print(dispListRun2)
     
-def secondRun():
-    val = 0
+def run():
     done.pack_forget()
-    var.set('')
     var.set('Running...')
     root.update()
     ch0 = setUpChannel(channel=0)
@@ -150,18 +154,18 @@ def secondRun():
         else:
             dispListSec1.extend([frame.id])
             dispListSec2.extend([text(frame.data)])
-        
         sortSec()
         val = cnt/20
         progress['value'] = val
         root.update()
     tearDownChannel(ch0)
-    print('Done.')
     print(dispListSec2)
     indexFind = find()
-    var.set("The ID of the control unit is: %d\nThe position of the byte is: %d" % (indexFind[0], indexFind[1]+1))
+    var.set("Done.\nThe ID of the control unit is: %d\nThe position of the byte is: %d\nThe byte changed from %d to %d" 
+            % (indexFind[0], indexFind[1]+1, indexFind[2], indexFind[3]))
     root.update()
     
+
 root = tk.Tk()
 root.title('Data Logger')
 var = StringVar()
@@ -172,23 +176,20 @@ L.pack()
 progress = Progressbar(root, orient = HORIZONTAL, length = 100, mode = 'determinate')
 progress.pack(pady = 10)
 
+frame = tk.Frame(root)
+frame.pack(fill=None, expand=False)
+
+button = tk.Button(frame, text="Quit", fg="red", command=desQuit)
+button.pack(side=tk.RIGHT)
+
+slogan = tk.Button(frame, text="Calibrate", command=calibrate)
+slogan.pack(side=tk.LEFT)
+
+done = tk.Button(root, text="Done", command=run)
+
 dispListRun1 = []
 dispListRun2 = []
 dispListSec1 = []
 dispListSec2 = []
 
-frame = tk.Frame(root)
-frame.pack(fill=None, expand=False)
-
-button = tk.Button(frame, text="Quit", fg="red", command=quit)
-button.pack(side=tk.RIGHT)
-
-slogan = tk.Button(frame, text="Run", command=run)
-slogan.pack(side=tk.LEFT)
-
-done = tk.Button(root, text="Done", command=secondRun)
-
-# done = tk.Button(frame, text="Done", command=secondRun)
-# done.pack(side=tk.LEFT)
-    
 root.mainloop()
