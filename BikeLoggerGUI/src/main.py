@@ -88,14 +88,14 @@ def find():
                 second_byte = dispS[x]
     return id_index, byte_index, first_byte, second_byte
 
-def test(indx, txt):
-    spl = text(txt).split(",")
-    dispSec2 = dispListSec2[indx].split(",")
-    for i in range (len(spl)):
-        if spl[i] != dispSec2[i]:
-            spl[i] = 'OO'
-    listSec2 = ','.join(spl)
-    return listSec2
+# def test(indx, txt):
+#     spl = text(txt).split(",")
+#     dispSec2 = dispListSec2[indx].split(",")
+#     for i in range (len(spl)):
+#         if spl[i] != dispSec2[i]:
+#             spl[i] = 'OO'
+#     listSec2 = ','.join(spl)
+#     return listSec2
 
 def resetData():
     del dispListRun1[:]
@@ -106,10 +106,9 @@ def resetData():
 def calibrate():    
     resetData()
     var.set('Calibrating...')
-    root.update()
     ch0 = setUpChannel(channel=0)
     cnt = 0
-    while cnt < 2000:
+    while cnt < 1000:
         try:
             frame = ch0.read()
             cnt += 1
@@ -123,24 +122,22 @@ def calibrate():
         else:
             dispListRun1.extend([frame.id])
             dispListRun2.extend([text(frame.data)])
-        
         sortRun()
-        val = cnt/20
+        val = cnt/10
         progress['value'] = val
         root.update()
     tearDownChannel(ch0)
     var.set('Turn on desired control unit and press done.')
-    done.pack(side=tk.BOTTOM)
-    root.update()
-    print(dispListRun2)
+    lab.pack(side=LEFT)
+    ent.pack(side=LEFT)
+    done.pack(side=RIGHT)
     
-def run():
-    done.pack_forget()
+def done():
     var.set('Running...')
     root.update()
     ch0 = setUpChannel(channel=0)
     cnt = 0
-    while cnt < 2000:
+    while cnt < 1000:
         try:
             frame = ch0.read()
             cnt += 1
@@ -150,21 +147,31 @@ def run():
         if frame.id in dispListSec1:
             inx = dispListSec1.index(frame.id)
             dispListSec1[inx] = frame.id
-            dispListSec2[inx] = test(inx, frame.data)
+            dispListSec2[inx] = text(frame.data)
         else:
             dispListSec1.extend([frame.id])
             dispListSec2.extend([text(frame.data)])
         sortSec()
-        val = cnt/20
+        val = cnt/10
         progress['value'] = val
         root.update()
     tearDownChannel(ch0)
-    print(dispListSec2)
     indexFind = find()
-    var.set("Done.\nThe ID of the control unit is: %d\nThe position of the byte is: %d\nThe byte changed from %d to %d" 
+    var.set("Done.\nThe ID of the control unit is: %d\nThe position of the byte is: %d\nThe byte changed from %s to %s" 
             % (indexFind[0], indexFind[1]+1, indexFind[2], indexFind[3]))
+    cu = ent.get()
+    dataList.append('Control unit: {}, ID: {}, Byte: {}, {} -> {}'.format(cu, indexFind[0], indexFind[1]+1, indexFind[2], indexFind[3]))
+    export.pack(side=tk.BOTTOM)
     root.update()
-    
+    ent.delete(0, 'end')
+    lab.pack_forget()
+    ent.pack_forget()
+    done.pack_forget()
+
+def export():
+    with open('listfile.txt', 'w') as filehandle:
+        filehandle.writelines("%s\n" % listItem for listItem in dataList)
+    export.pack_forget()
 
 root = tk.Tk()
 root.title('Data Logger')
@@ -185,11 +192,19 @@ button.pack(side=tk.RIGHT)
 slogan = tk.Button(frame, text="Calibrate", command=calibrate)
 slogan.pack(side=tk.LEFT)
 
-done = tk.Button(root, text="Done", command=run)
+done = tk.Button(root, text="Done", command=done)
+
+export = tk.Button(frame, text="Export", command=export)
+
+lab = tk.Label(root, text="Control Unit")
+ent = tk.Entry(root)
 
 dispListRun1 = []
 dispListRun2 = []
 dispListSec1 = []
 dispListSec2 = []
+
+cu = ""
+dataList = []
 
 root.mainloop()
