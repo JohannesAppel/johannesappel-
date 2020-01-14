@@ -24,7 +24,9 @@ class CanBus(threading.Thread):
         self.queue = queue.Queue()
         self._is_alive = threading.Event()
         self._is_alive.set()
+        self.trashed_count = None
         self.frame_count = None
+        self.error = None
         
     def get(self):
         # None blocking get
@@ -56,7 +58,9 @@ class CanBus(threading.Thread):
                 #self.queue.put('except canlib.canNoMsg')
                 pass
             except Exception as e:  # Break at unknow error
-                self.queue.put(e)
+                self.error = e
+                print('Break at unknow error: {}'.format(e))
+                #self.queue.put(e)
                 self.stop()
                 continue
     
@@ -139,7 +143,8 @@ if __name__ == "__main__":
             pass
         
     cbus.stop()
-    print('EXIT, frame_count:{}'.format(cbus.frame_count))
+    print('EXIT, frame_count:{}, none_count:{}, trashed_count:{}'
+         .format(cbus.frame_count, none_count, cbus.trashed_count)) 
         
         
     cbus.tearDownChannel()
