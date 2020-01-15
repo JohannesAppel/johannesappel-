@@ -103,7 +103,7 @@ def resetData():
     del dispListSec1[:]
     del dispListSec2[:]
 
-def calibrate():    
+def calibrate():
     resetData()
     var.set('Calibrating...')
     ch0 = setUpChannel(channel=0)
