@@ -88,14 +88,14 @@ def find():
                 second_byte = dispS[x]
     return id_index, byte_index, first_byte, second_byte
 
-# def test(indx, txt):
-#     spl = text(txt).split(",")
-#     dispSec2 = dispListSec2[indx].split(",")
-#     for i in range (len(spl)):
-#         if spl[i] != dispSec2[i]:
-#             spl[i] = 'OO'
-#     listSec2 = ','.join(spl)
-#     return listSec2
+def test(indx, txt):
+    spl = text(txt).split(",")
+    dispSec2 = dispListSec2[indx].split(",")
+    for i in range (len(spl)):
+        if spl[i] != dispSec2[i]:
+            spl[i] = 'OO'
+    listSec2 = ','.join(spl)
+    return listSec2
 
 def resetData():
     del dispListRun1[:]
@@ -126,6 +126,7 @@ def calibrate():
         val = cnt/10
         progress['value'] = val
         root.update()
+        
     tearDownChannel(ch0)
     var.set('Turn on desired control unit and press done.')
     lab.pack(side=LEFT)
@@ -134,7 +135,6 @@ def calibrate():
     
 def done():
     var.set('Running...')
-    root.update()
     ch0 = setUpChannel(channel=0)
     cnt = 0
     while cnt < 1000:
@@ -155,14 +155,15 @@ def done():
         val = cnt/10
         progress['value'] = val
         root.update()
+        
     tearDownChannel(ch0)
     indexFind = find()
     var.set("Done.\nThe ID of the control unit is: %d\nThe position of the byte is: %d\nThe byte changed from %s to %s" 
             % (indexFind[0], indexFind[1]+1, indexFind[2], indexFind[3]))
     cu = ent.get()
     dataList.append('Control unit: {}, ID: {}, Byte: {}, {} -> {}'.format(cu, indexFind[0], indexFind[1]+1, indexFind[2], indexFind[3]))
+    
     export.pack(side=tk.BOTTOM)
-    root.update()
     ent.delete(0, 'end')
     lab.pack_forget()
     ent.pack_forget()
