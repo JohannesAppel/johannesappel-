@@ -6,7 +6,6 @@ Created on Jan 10, 2020
 
 import tkinter as tk
 import binascii
-import time
 
 from canlib import canlib
 from canlib.canlib import ChannelData
@@ -71,6 +70,26 @@ def returning(indx, txt):
     listRun2 = ','.join(spl)
     return listRun2
 
+def test(indx, txt):
+    spl = text(txt).split(",")
+    dispSec2 = dispListSec2[indx].split(",")
+    dispRun2 = dispListRun2[indx].split(",")
+    for i in range (len(spl)):
+        if spl[i] != dispSec2[i] and dispRun2[i] != 'XX':
+            if dispSec2[i] == 'OO':
+                spl[i] = 'OO'
+            else:
+                global count
+                global blink1
+                global blink2
+                if count < 1:
+                    blink1 = dispSec2[i]
+                    blink2 = spl[i]
+                    spl[i] = 'OO'
+                    count += 1
+    listSec2 = ','.join(spl)
+    return listSec2
+
 def find(con):
     id_index = 0
     byte_index = 0
@@ -92,26 +111,6 @@ def find(con):
                     dispList.append('Control unit: {}, ID: {}, Byte: {}, {} -> {}'.format(con, id_index, byte_index, first_byte, second_byte))
                     dataList.append('Control unit: {}, ID: {}, Byte: {}, {} -> {}'.format(con, id_index, byte_index, first_byte, second_byte))
     return dispList
-
-def test(indx, txt):
-    spl = text(txt).split(",")
-    dispSec2 = dispListSec2[indx].split(",")
-    dispRun2 = dispListRun2[indx].split(",")
-    for i in range (len(spl)):
-        if spl[i] != dispSec2[i] and dispRun2[i] != 'XX':
-            if dispSec2[i] == 'OO':
-                spl[i] = 'OO'
-            else:
-                global count
-                global blink1
-                global blink2
-                if count < 1:
-                    blink1 = dispSec2[i]
-                    blink2 = spl[i]
-                    spl[i] = 'OO'
-                    count += 1
-    listSec2 = ','.join(spl)
-    return listSec2
 
 def resetData():
     del dispListRun1[:]
