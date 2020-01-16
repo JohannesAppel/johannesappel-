@@ -13,7 +13,6 @@ from canlib.canlib import ChannelData
 from tkinter import *
 from tkinter.ttk import *
 
-
 def setUpChannel(channel,
                  openFlags=canlib.canOPEN_ACCEPT_VIRTUAL,
                  bitrate=canlib.canBITRATE_500K,
@@ -87,24 +86,30 @@ def find(con):
                 first_byte = dispR[x]
                 second_byte = dispS[x]
                 if dispS[x] == 'OO':
-                    dispList.append('Control unit: {}, ID: {}, Byte: {}, {} -> {}'.format(con, id_index, byte_index, first_byte, blink))
-                    dataList.append('Control unit: {}, ID: {}, Byte: {}, {} -> {}'.format(con, id_index, byte_index, first_byte, blink))
+                    dispList.append('Control unit: {}, ID: {}, Byte: {}, {} -> {}'.format(con, id_index, byte_index, blink1, blink2))
+                    dataList.append('Control unit: {}, ID: {}, Byte: {}, {} -> {}'.format(con, id_index, byte_index, blink1, blink2))
                 else:
                     dispList.append('Control unit: {}, ID: {}, Byte: {}, {} -> {}'.format(con, id_index, byte_index, first_byte, second_byte))
                     dataList.append('Control unit: {}, ID: {}, Byte: {}, {} -> {}'.format(con, id_index, byte_index, first_byte, second_byte))
-                return dispList
+    return dispList
 
 def test(indx, txt):
     spl = text(txt).split(",")
     dispSec2 = dispListSec2[indx].split(",")
     dispRun2 = dispListRun2[indx].split(",")
     for i in range (len(spl)):
-        if spl[i] != dispSec2[i] and dispRun2[i] != 'XX' and dispSec2[i] != 'OO':
-            if count <= 1:
-                blink = spl[i]
-                print(blink)
-            spl[i] = 'OO'
-            count += 1
+        if spl[i] != dispSec2[i] and dispRun2[i] != 'XX':
+            if dispSec2[i] == 'OO':
+                spl[i] = 'OO'
+            else:
+                global count
+                global blink1
+                global blink2
+                if count < 1:
+                    blink1 = dispSec2[i]
+                    blink2 = spl[i]
+                    spl[i] = 'OO'
+                    count += 1
     listSec2 = ','.join(spl)
     return listSec2
 
@@ -114,7 +119,12 @@ def resetData():
     del dispListSec1[:]
     del dispListSec2[:]
     del dispList[:]
-    blink = ""
+    global blink1
+    blink1 = ""
+    global blink2
+    blink2 = ""
+    global count
+    count = 0
 
 def calibrate():
     entBike.delete(0, 'end')
@@ -173,6 +183,7 @@ def done():
         root.update()
         
     tearDownChannel(ch0)
+    
     cu = entControl.get()
     indexFind = find(cu)
     if len(indexFind) == 1:
@@ -233,6 +244,6 @@ cu = ""
 dataList = []
 dispList = []
 blink = ""
-global count
+count = 0
 
 root.mainloop()
