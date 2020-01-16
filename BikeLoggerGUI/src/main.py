@@ -72,28 +72,39 @@ def returning(indx, txt):
     listRun2 = ','.join(spl)
     return listRun2
 
-def find():
+def find(con):
     id_index = 0
     byte_index = 0
-    first_byte = 0
-    second_byte = 0
+    first_byte = ""
+    second_byte = ""
     for j in range (len(dispListRun1)):
         dispR = dispListRun2[j].split(",")
         dispS = dispListSec2[j].split(",")
-        for x in range (len(dispR)):
+        for x in range (len(dispR)): 
             if dispR[x] != dispS[x] and dispR[x] != 'XX':
                 id_index = dispListRun1[j]
-                byte_index = x
+                byte_index = x+1
                 first_byte = dispR[x]
                 second_byte = dispS[x]
-    return id_index, byte_index, first_byte, second_byte
+                if dispS[x] == 'OO':
+                    dispList.append('Control unit: {}, ID: {}, Byte: {}, {} -> {}'.format(con, id_index, byte_index, first_byte, blink))
+                    dataList.append('Control unit: {}, ID: {}, Byte: {}, {} -> {}'.format(con, id_index, byte_index, first_byte, blink))
+                else:
+                    dispList.append('Control unit: {}, ID: {}, Byte: {}, {} -> {}'.format(con, id_index, byte_index, first_byte, second_byte))
+                    dataList.append('Control unit: {}, ID: {}, Byte: {}, {} -> {}'.format(con, id_index, byte_index, first_byte, second_byte))
+                return dispList
 
 def test(indx, txt):
     spl = text(txt).split(",")
     dispSec2 = dispListSec2[indx].split(",")
+    dispRun2 = dispListRun2[indx].split(",")
     for i in range (len(spl)):
-        if spl[i] != dispSec2[i]:
+        if spl[i] != dispSec2[i] and dispRun2[i] != 'XX' and dispSec2[i] != 'OO':
+            if count <= 1:
+                blink = spl[i]
+                print(blink)
             spl[i] = 'OO'
+            count += 1
     listSec2 = ','.join(spl)
     return listSec2
 
@@ -102,13 +113,18 @@ def resetData():
     del dispListRun2[:]
     del dispListSec1[:]
     del dispListSec2[:]
+    del dispList[:]
+    blink = ""
 
 def calibrate():
+    entBike.delete(0, 'end')
+    entBike.pack_forget()
+    bikeName.pack_forget()
     resetData()
     var.set('Calibrating...')
     ch0 = setUpChannel(channel=0)
     cnt = 0
-    while cnt < 1000:
+    while cnt < 5000:
         try:
             frame = ch0.read()
             cnt += 1
@@ -123,21 +139,21 @@ def calibrate():
             dispListRun1.extend([frame.id])
             dispListRun2.extend([text(frame.data)])
         sortRun()
-        val = cnt/10
+        val = cnt/50
         progress['value'] = val
         root.update()
         
     tearDownChannel(ch0)
     var.set('Turn on desired control unit and press done.')
-    lab.pack(side=LEFT)
-    ent.pack(side=LEFT)
-    done.pack(side=RIGHT)
+    lab.pack(side=tk.LEFT, padx=3, pady=3)
+    entControl.pack(side=tk.LEFT, padx=3, pady=3)
+    done.pack(side=tk.RIGHT, padx=3, pady=3)
     
 def done():
     var.set('Running...')
     ch0 = setUpChannel(channel=0)
     cnt = 0
-    while cnt < 1000:
+    while cnt < 5000:
         try:
             frame = ch0.read()
             cnt += 1
@@ -147,30 +163,35 @@ def done():
         if frame.id in dispListSec1:
             inx = dispListSec1.index(frame.id)
             dispListSec1[inx] = frame.id
-            dispListSec2[inx] = text(frame.data)
+            dispListSec2[inx] = test(inx, frame.data)
         else:
             dispListSec1.extend([frame.id])
             dispListSec2.extend([text(frame.data)])
         sortSec()
-        val = cnt/10
+        val = cnt/50
         progress['value'] = val
         root.update()
         
     tearDownChannel(ch0)
-    indexFind = find()
-    var.set("Done.\nThe ID of the control unit is: %d\nThe position of the byte is: %d\nThe byte changed from %s to %s" 
-            % (indexFind[0], indexFind[1]+1, indexFind[2], indexFind[3]))
-    cu = ent.get()
-    dataList.append('Control unit: {}, ID: {}, Byte: {}, {} -> {}'.format(cu, indexFind[0], indexFind[1]+1, indexFind[2], indexFind[3]))
+    cu = entControl.get()
+    indexFind = find(cu)
+    if len(indexFind) == 1:
+        disp = indexFind
+    else:
+        disp = '\n'.join(indexFind)
+    var.set(disp)
     
-    export.pack(side=tk.BOTTOM)
-    ent.delete(0, 'end')
+    export.pack(side=tk.BOTTOM, padx=3, pady=3)
+    entControl.delete(0, 'end')
     lab.pack_forget()
-    ent.pack_forget()
+    entControl.pack_forget()
     done.pack_forget()
-
+    bikeName.pack(side=tk.LEFT, padx=3, pady=3)
+    entBike.pack(side=tk.RIGHT, padx=3, pady=3)
+    
 def export():
-    with open('listfile.txt', 'w') as filehandle:
+    name = entBike.get()
+    with open('{}.txt'.format(name), 'w') as filehandle:
         filehandle.writelines("%s\n" % listItem for listItem in dataList)
     export.pack_forget()
 
@@ -182,23 +203,26 @@ L = Label(root, textvariable = var)
 L.pack()
 
 progress = Progressbar(root, orient = HORIZONTAL, length = 100, mode = 'determinate')
-progress.pack(pady = 10)
+progress.pack(pady = 8)
 
 frame = tk.Frame(root)
 frame.pack(fill=None, expand=False)
 
-button = tk.Button(frame, text="Quit", fg="red", command=desQuit)
-button.pack(side=tk.RIGHT)
+quitButton = tk.Button(frame, text="Quit", fg="red", command=desQuit)
+quitButton.pack(side=tk.RIGHT, padx=3, pady=3)
 
-slogan = tk.Button(frame, text="Calibrate", command=calibrate)
-slogan.pack(side=tk.LEFT)
+calibrateButton = tk.Button(frame, text="Calibrate", command=calibrate)
+calibrateButton.pack(side=tk.LEFT, padx=3, pady=3)
 
 done = tk.Button(root, text="Done", command=done)
 
 export = tk.Button(frame, text="Export", command=export)
 
 lab = tk.Label(root, text="Control Unit")
-ent = tk.Entry(root)
+entControl = tk.Entry(root)
+
+bikeName = tk.Label(root, text="Bike Name")
+entBike = tk.Entry(root)
 
 dispListRun1 = []
 dispListRun2 = []
@@ -207,5 +231,8 @@ dispListSec2 = []
 
 cu = ""
 dataList = []
+dispList = []
+blink = ""
+global count
 
 root.mainloop()
