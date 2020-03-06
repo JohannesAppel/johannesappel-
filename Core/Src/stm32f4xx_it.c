@@ -21,7 +21,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f4xx_it.h"
-#include "stdbool.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -57,7 +56,9 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-
+extern DMA_HandleTypeDef hdma_dac1;
+extern DAC_HandleTypeDef hdac;
+extern TIM_HandleTypeDef htim6;
 /* USER CODE BEGIN EV */
 extern volatile uint8_t state;
 extern volatile uint8_t enter;
@@ -201,6 +202,20 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
+  * @brief This function handles DMA1 stream5 global interrupt.
+  */
+void DMA1_Stream5_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA1_Stream5_IRQn 0 */
+
+  /* USER CODE END DMA1_Stream5_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_dac1);
+  /* USER CODE BEGIN DMA1_Stream5_IRQn 1 */
+
+  /* USER CODE END DMA1_Stream5_IRQn 1 */
+}
+
+/**
   * @brief This function handles EXTI line[9:5] interrupts.
   */
 void EXTI9_5_IRQHandler(void)
@@ -209,42 +224,43 @@ void EXTI9_5_IRQHandler(void)
 
 	if((HAL_GetTick() - trigger)>=10 && state == 0) //Idle state
 	{
-		bool rec = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5);
-		if(rec == 1 && HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_8) == 1)
+		if(Rec_Button == 1 && Button_1 == 1)
 		{
 			trigger = HAL_GetTick();
 			state = 2; //Record 1
 		}
-		if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5) == 1 && HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_7) == 1)
+		if(Rec_Button == 1 && Button_2)
 		{
 			trigger = HAL_GetTick();
 			state = 3; //Record 2
 		}
-		if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5) == 1 && HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_9) == 1)
+		if(Rec_Button == 1 && Button_3 == 1)
 		{
 			trigger = HAL_GetTick();
 			state = 4; //Record 3
 		}
 
 
-		if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_8) == 1 && HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5) != 1)
+		if(Button_1 == 1 && Rec_Button != 1)
 		{
 			trigger = HAL_GetTick();
 			state = 5; //Play 1
 		}
-		if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_7) == 1 && HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5) != 1)
+		if(Button_2 == 1 && Rec_Button != 1)
 		{
 			trigger = HAL_GetTick();
 			state = 6; //Play 1
 		}
-		if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_9) == 1 && HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5) != 1)
+		if(Button_3 == 1 && Rec_Button != 1)
 		{
 			trigger = HAL_GetTick();
 			state = 7; //Play 1
 		}
 	}
-	if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6) == 1)
+
+	if((HAL_GetTick() - trigger) > 10 && Stop_Button == 1)
 	{
+		trigger = HAL_GetTick();
 		enter = 1;
 	}
 
@@ -257,6 +273,21 @@ void EXTI9_5_IRQHandler(void)
   /* USER CODE BEGIN EXTI9_5_IRQn 1 */
 
   /* USER CODE END EXTI9_5_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM6 global interrupt and DAC1, DAC2 underrun error interrupts.
+  */
+void TIM6_DAC_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
+
+  /* USER CODE END TIM6_DAC_IRQn 0 */
+  HAL_DAC_IRQHandler(&hdac);
+  HAL_TIM_IRQHandler(&htim6);
+  /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
+
+  /* USER CODE END TIM6_DAC_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
