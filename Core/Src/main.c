@@ -20,10 +20,11 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "sinewave.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "global_variables.h"
+#include "sinewave.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -77,8 +78,9 @@ static void MX_TIM6_Init(void);
 volatile uint16_t trigger = 0;
 volatile uint8_t state = 0;
 volatile uint8_t enter = 0;
+volatile uint8_t transmit = 0;
 
-uint32_t buffer[256];
+uint16_t buffer[256];
 /* USER CODE END 0 */
 
 /**
@@ -141,8 +143,12 @@ int main(void)
 	{
 		if(state == 2 && Button_1 == 0)
 		{
-			HAL_UART_Transmit(&huart2, Rec1, 10, 1000);
-			HAL_UART_DeInit(&huart2);
+			//HAL_UART_DeInit(&huart2);
+			if(transmit == 1)
+			{
+				HAL_UART_Transmit(&huart2, Rec1, 10, 1000);
+				transmit = 0;
+			}
 			if((HAL_GetTick() - trigger) >= 250)
 			{
 				HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_8);
@@ -153,8 +159,11 @@ int main(void)
 		}
 		if(state == 3 && Button_2 == 0)
 		{
-			HAL_UART_Transmit(&huart2, Rec2, 10, 1000);
-			HAL_UART_DeInit(&huart2);
+			if(transmit == 1)
+			{
+				HAL_UART_Transmit(&huart2, Rec2, 10, 1000);
+				transmit = 0;
+			}
 			if((HAL_GetTick() - trigger) >= 250)
 			{
 				HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_4);
@@ -165,8 +174,11 @@ int main(void)
 		}
 		if(state == 4 && Button_3 == 0)
 		{
-			HAL_UART_Transmit(&huart2, Rec3, 10, 1000);
-			HAL_UART_DeInit(&huart2);
+			if(transmit == 1)
+			{
+				HAL_UART_Transmit(&huart2, Rec3, 10, 1000);
+				transmit = 0;
+			}
 			if((HAL_GetTick() - trigger) >= 250)
 			{
 				HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
@@ -177,60 +189,60 @@ int main(void)
 		}
 		if(state == 5 && Button_1 == 0)
 		{
-			HAL_UART_Transmit(&huart2, Play1, 10, 1000);
-			HAL_UART_DeInit(&huart2);
+			if(transmit == 1)
+			{
+				HAL_UART_Transmit(&huart2, Play1, 10, 1000);
+				wave_fillbuffer(buffer, 1, 256);
+				HAL_TIM_Base_Start(&htim6);
+				HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, buffer, 256, DAC_ALIGN_12B_R);
+				transmit = 0;
+			}
 			if((HAL_GetTick() - trigger) >= 250)
 			{
 				HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_8);
 				trigger = 0;
 				uwTick = 0;
 			}
-			if(transmit != 1)
-			{
-				wave_fillbuffer(buffer, 1, 256);
-				HAL_TIM_Base_Start(&htim6);
-				HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, buffer, 256, DAC_ALIGN_12B_R);
-			}
 		}
 		if(state == 6 && Button_2 == 0)
 		{
-			HAL_UART_Transmit(&huart2, Play2, 10, 1000);
-			HAL_UART_DeInit(&huart2);
+			if(transmit == 1)
+			{
+				HAL_UART_Transmit(&huart2, Play2, 10, 1000);
+				wave_fillbuffer(buffer, 2, 256);
+				HAL_TIM_Base_Start(&htim6);
+				HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, buffer, 256, DAC_ALIGN_12B_R);
+				transmit = 0;
+			}
 			if((HAL_GetTick() - trigger) >= 250)
 			{
 				HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_4);
 				trigger = 0;
 				uwTick = 0;
 			}
-			if(transmit != 1)
-			{
-				wave_fillbuffer(buffer, 2, 256);
-				HAL_TIM_Base_Start(&htim6);
-				HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, buffer, 256, DAC_ALIGN_12B_R);
-			}
 		}
 		if(state == 7 && Button_3 == 0)
 		{
-			HAL_UART_Transmit(&huart2, Play3, 10, 1000);
-			HAL_UART_DeInit(&huart2);
+			if(transmit == 1)
+			{
+				HAL_UART_Transmit(&huart2, Play3, 10, 1000);
+				wave_fillbuffer(buffer, 3, 256);
+				HAL_TIM_Base_Start(&htim6);
+				HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, buffer, 256, DAC_ALIGN_12B_R);
+				transmit = 0;
+			}
 			if((HAL_GetTick() - trigger) >= 250)
 			{
 				HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
 				trigger = 0;
 				uwTick = 0;
 			}
-			if(transmit != 1)
-			{
-				wave_fillbuffer(buffer, 3, 256);
-				HAL_TIM_Base_Start(&htim6);
-				HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, buffer, 256, DAC_ALIGN_12B_R);
-			}
 		}
-		if(enter == 1 && Stop_Button == 0 && (HAL_GetTick() - trigger)>=10)
-		{
-			state = 1;
-		}
-		if(state == 1 && (HAL_GetTick() - trigger)>=10)
+		//		if(enter == 1 && Stop_Button == 0 && (HAL_GetTick() - trigger)>=10)
+		//		{
+		//			state = 1;
+		//		}
+		if(state == 1 && Stop_Button == 0 && (HAL_GetTick() - trigger)>=10)
 		{
 			HAL_UART_Init(&huart2);
 			HAL_UART_Transmit(&huart2, Stop, 10, 1000);
@@ -372,7 +384,7 @@ static void MX_DAC_Init(void)
 	}
 	/** DAC channel OUT1 config
 	 */
-	sConfig.DAC_Trigger = DAC_TRIGGER_NONE;
+	sConfig.DAC_Trigger = DAC_TRIGGER_T6_TRGO;
 	sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
 	if (HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_1) != HAL_OK)
 	{

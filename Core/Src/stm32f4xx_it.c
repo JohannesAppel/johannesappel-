@@ -23,6 +23,8 @@
 #include "stm32f4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "global_variables.h"
+#include "sinewave.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -63,6 +65,7 @@ extern TIM_HandleTypeDef htim6;
 extern volatile uint8_t state;
 extern volatile uint8_t enter;
 extern volatile uint16_t trigger;
+extern volatile uint8_t transmit;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -227,16 +230,19 @@ void EXTI9_5_IRQHandler(void)
 		if(Rec_Button == 1 && Button_1 == 1)
 		{
 			trigger = HAL_GetTick();
+			transmit = 1;
 			state = 2; //Record 1
 		}
 		if(Rec_Button == 1 && Button_2)
 		{
 			trigger = HAL_GetTick();
+			transmit = 1;
 			state = 3; //Record 2
 		}
 		if(Rec_Button == 1 && Button_3 == 1)
 		{
 			trigger = HAL_GetTick();
+			transmit = 1;
 			state = 4; //Record 3
 		}
 
@@ -244,16 +250,19 @@ void EXTI9_5_IRQHandler(void)
 		if(Button_1 == 1 && Rec_Button != 1)
 		{
 			trigger = HAL_GetTick();
+			transmit = 1;
 			state = 5; //Play 1
 		}
 		if(Button_2 == 1 && Rec_Button != 1)
 		{
 			trigger = HAL_GetTick();
+			transmit = 1;
 			state = 6; //Play 1
 		}
 		if(Button_3 == 1 && Rec_Button != 1)
 		{
 			trigger = HAL_GetTick();
+			transmit = 1;
 			state = 7; //Play 1
 		}
 	}
@@ -261,7 +270,7 @@ void EXTI9_5_IRQHandler(void)
 	if((HAL_GetTick() - trigger) > 10 && Stop_Button == 1)
 	{
 		trigger = HAL_GetTick();
-		enter = 1;
+		state = 1;
 	}
 
   /* USER CODE END EXTI9_5_IRQn 0 */
