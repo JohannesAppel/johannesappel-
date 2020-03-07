@@ -76,11 +76,15 @@ static void MX_TIM6_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 volatile uint16_t trigger = 0;
+volatile uint16_t led_trigger = 0;
 volatile uint8_t state = 0;
 volatile uint8_t enter = 0;
 volatile uint8_t transmit = 0;
 
-uint16_t buffer[256];
+uint16_t buffer1[1002];
+uint16_t buffer2[843];
+uint16_t buffer3[916];
+
 /* USER CODE END 0 */
 
 /**
@@ -132,7 +136,6 @@ int main(void)
 	uint8_t Play3[10] = {127, 128, 'P', 'l', 'a', 'y', '_', '_', '_', '3'};
 
 	uint8_t Stop[10] = {127, 128, 'S', 't', 'o', 'p', '_', '_', '_', '_'};
-
 	/* USER CODE END 2 */
 
 
@@ -143,18 +146,16 @@ int main(void)
 	{
 		if(state == 2 && Button_1 == 0)
 		{
-			//HAL_UART_DeInit(&huart2);
 			if(transmit == 1)
 			{
 				HAL_UART_Transmit(&huart2, Rec1, 10, 1000);
 				transmit = 0;
 			}
-			if((HAL_GetTick() - trigger) >= 250)
+			if((HAL_GetTick() - led_trigger) >= 250)
 			{
 				HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_8);
 				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, 1);
-				trigger = 0;
-				uwTick = 0;
+				led_trigger = HAL_GetTick();
 			}
 		}
 		if(state == 3 && Button_2 == 0)
@@ -164,12 +165,11 @@ int main(void)
 				HAL_UART_Transmit(&huart2, Rec2, 10, 1000);
 				transmit = 0;
 			}
-			if((HAL_GetTick() - trigger) >= 250)
+			if((HAL_GetTick() - led_trigger) >= 250)
 			{
 				HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_4);
 				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, 1);
-				trigger = 0;
-				uwTick = 0;
+				led_trigger = HAL_GetTick();
 			}
 		}
 		if(state == 4 && Button_3 == 0)
@@ -179,70 +179,66 @@ int main(void)
 				HAL_UART_Transmit(&huart2, Rec3, 10, 1000);
 				transmit = 0;
 			}
-			if((HAL_GetTick() - trigger) >= 250)
+			if((HAL_GetTick() - led_trigger) >= 250)
 			{
 				HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
 				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, 1);
-				trigger = 0;
-				uwTick = 0;
+				led_trigger = HAL_GetTick();
 			}
 		}
 		if(state == 5 && Button_1 == 0)
 		{
 			if(transmit == 1)
 			{
-				HAL_UART_Transmit(&huart2, Play1, 10, 1000);
-				wave_fillbuffer(buffer, 1, 256);
+				wave_fillbuffer(buffer1, 1, 1002);
 				HAL_TIM_Base_Start(&htim6);
-				HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, buffer, 256, DAC_ALIGN_12B_R);
+				HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, buffer1, 1002, DAC_ALIGN_12B_R);
+				HAL_UART_Transmit(&huart2, Play1, 10, 1000);
 				transmit = 0;
 			}
-			if((HAL_GetTick() - trigger) >= 250)
+			if((HAL_GetTick() - led_trigger) >= 250)
 			{
 				HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_8);
-				trigger = 0;
-				uwTick = 0;
+				led_trigger = HAL_GetTick();
 			}
 		}
-		if(state == 6 && Button_2 == 0)
+		if(state == 6 && Button_2 == 0 && (HAL_GetTick() - led_trigger) > 10)
 		{
 			if(transmit == 1)
 			{
-				HAL_UART_Transmit(&huart2, Play2, 10, 1000);
-				wave_fillbuffer(buffer, 2, 256);
+				wave_fillbuffer(buffer2, 2, 843);
 				HAL_TIM_Base_Start(&htim6);
-				HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, buffer, 256, DAC_ALIGN_12B_R);
+				HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, buffer2, 843, DAC_ALIGN_12B_R);
+				HAL_UART_Transmit(&huart2, Play2, 10, 1000);
 				transmit = 0;
 			}
-			if((HAL_GetTick() - trigger) >= 250)
+			if((HAL_GetTick() - led_trigger) >= 250)
 			{
 				HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_4);
-				trigger = 0;
-				uwTick = 0;
+				led_trigger = HAL_GetTick();
 			}
 		}
 		if(state == 7 && Button_3 == 0)
 		{
 			if(transmit == 1)
 			{
-				HAL_UART_Transmit(&huart2, Play3, 10, 1000);
-				wave_fillbuffer(buffer, 3, 256);
+				wave_fillbuffer(buffer3, 3, 916);
 				HAL_TIM_Base_Start(&htim6);
-				HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, buffer, 256, DAC_ALIGN_12B_R);
+				HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, buffer3, 916, DAC_ALIGN_12B_R);
+				HAL_UART_Transmit(&huart2, Play3, 10, 1000);
 				transmit = 0;
 			}
-			if((HAL_GetTick() - trigger) >= 250)
+			if((HAL_GetTick() - led_trigger) >= 250)
 			{
 				HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
-				trigger = 0;
-				uwTick = 0;
+				led_trigger = HAL_GetTick();
 			}
 		}
-		//		if(enter == 1 && Stop_Button == 0 && (HAL_GetTick() - trigger)>=10)
-		//		{
-		//			state = 1;
-		//		}
-		if(state == 1 && Stop_Button == 0 && (HAL_GetTick() - trigger)>=10)
+		if((enter == 1 && Stop_Button == 0 && (HAL_GetTick() - trigger)>=10))
+		{
+			state = 1;
+		}
+		if(state == 1 || ((HAL_GetTick() - trigger) > 20000))
 		{
 			HAL_UART_Init(&huart2);
 			HAL_UART_Transmit(&huart2, Stop, 10, 1000);
@@ -255,7 +251,9 @@ int main(void)
 			state = 0;
 			enter = 0;
 			uwTick = 0;
+			trigger = 0;
 		}
+
 
 		/* USER CODE END WHILE */
 
