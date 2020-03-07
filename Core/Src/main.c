@@ -234,7 +234,7 @@ int main(void)
 				led_trigger = HAL_GetTick();
 			}
 		}
-		if((enter == 1 && Stop_Button == 0 && (HAL_GetTick() - trigger)>=10))
+		if((enter == 1 && Stop_Button == 0 && (HAL_GetTick() - trigger)>=20))
 		{
 			state = 1;
 		}
