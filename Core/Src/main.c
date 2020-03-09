@@ -51,7 +51,7 @@ I2C_HandleTypeDef hi2c2;
 
 SPI_HandleTypeDef hspi2;
 
-TIM_HandleTypeDef htim6;
+TIM_HandleTypeDef htim2;
 
 UART_HandleTypeDef huart2;
 
@@ -68,7 +68,7 @@ static void MX_SPI2_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_DAC_Init(void);
 static void MX_I2C2_Init(void);
-static void MX_TIM6_Init(void);
+static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -81,10 +81,21 @@ volatile uint8_t state = 0;
 volatile uint8_t enter = 0;
 volatile uint8_t transmit = 0;
 
+uint16_t buffer[1024];
 uint16_t buffer1[1002];
 uint16_t buffer2[843];
 uint16_t buffer3[916];
 
+
+void HAL_DAC_ConvCpltCallbackCh1(DAC_HandleTypeDef* hdac)
+{
+	HAL_DAC_Start_DMA(hdac, DAC_CHANNEL_1, buffer, 1024, DAC_ALIGN_12B_R);
+	wave_fillbuffer(buffer+512, (state-4), 512);
+}
+void HAL_DAC_ConvHalfCpltCallbackCh1(DAC_HandleTypeDef* hdac)
+{
+	wave_fillbuffer(buffer, (state-4), 512);
+}
 /* USER CODE END 0 */
 
 /**
@@ -122,7 +133,7 @@ int main(void)
 	MX_ADC1_Init();
 	MX_DAC_Init();
 	MX_I2C2_Init();
-	MX_TIM6_Init();
+	MX_TIM2_Init();
 	/* USER CODE BEGIN 2 */
 	uint8_t TransStr[10] = {127, 128, '2', '0', '8', '5', '4', '7', '0', '6'};
 	HAL_UART_Transmit(&huart2, TransStr, 10, 1000);
@@ -137,7 +148,6 @@ int main(void)
 
 	uint8_t Stop[10] = {127, 128, 'S', 't', 'o', 'p', '_', '_', '_', '_'};
 	/* USER CODE END 2 */
-
 
 
 	/* Infinite loop */
@@ -191,8 +201,8 @@ int main(void)
 			if(transmit == 1)
 			{
 				wave_fillbuffer(buffer1, 1, 1002);
-				HAL_TIM_Base_Start(&htim6);
-				HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, buffer1, 1002, DAC_ALIGN_12B_R);
+				HAL_TIM_Base_Start(&htim2);
+				HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, buffer, 1024, DAC_ALIGN_12B_R);
 				HAL_UART_Transmit(&huart2, Play1, 10, 1000);
 				transmit = 0;
 			}
@@ -202,13 +212,13 @@ int main(void)
 				led_trigger = HAL_GetTick();
 			}
 		}
-		if(state == 6 && Button_2 == 0 && (HAL_GetTick() - led_trigger) > 10)
+		if(state == 6 && Button_2 == 0)
 		{
 			if(transmit == 1)
 			{
 				wave_fillbuffer(buffer2, 2, 843);
-				HAL_TIM_Base_Start(&htim6);
-				HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, buffer2, 843, DAC_ALIGN_12B_R);
+				HAL_TIM_Base_Start(&htim2);
+				HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, buffer, 1024, DAC_ALIGN_12B_R);
 				HAL_UART_Transmit(&huart2, Play2, 10, 1000);
 				transmit = 0;
 			}
@@ -223,8 +233,8 @@ int main(void)
 			if(transmit == 1)
 			{
 				wave_fillbuffer(buffer3, 3, 916);
-				HAL_TIM_Base_Start(&htim6);
-				HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, buffer3, 916, DAC_ALIGN_12B_R);
+				HAL_TIM_Base_Start(&htim2);
+				HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, buffer, 1024, DAC_ALIGN_12B_R);
 				HAL_UART_Transmit(&huart2, Play3, 10, 1000);
 				transmit = 0;
 			}
@@ -234,20 +244,19 @@ int main(void)
 				led_trigger = HAL_GetTick();
 			}
 		}
-		if((enter == 1 && Stop_Button == 0 && (HAL_GetTick() - trigger)>=20))
+		if((enter == 1 && Stop_Button == 0 && (HAL_GetTick() - trigger)>=10))
 		{
 			state = 1;
 		}
-		if(state == 1 || ((HAL_GetTick() - trigger) > 20000))
+		if(state == 1)
 		{
-			HAL_UART_Init(&huart2);
 			HAL_UART_Transmit(&huart2, Stop, 10, 1000);
+			HAL_TIM_Base_Stop(&htim2);
+			HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
 			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, 0);
 			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, 0);
 			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, 0);
 			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, 0);
-			HAL_TIM_Base_Stop(&htim6);
-			HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
 			state = 0;
 			enter = 0;
 			uwTick = 0;
@@ -382,7 +391,7 @@ static void MX_DAC_Init(void)
 	}
 	/** DAC channel OUT1 config
 	 */
-	sConfig.DAC_Trigger = DAC_TRIGGER_T6_TRGO;
+	sConfig.DAC_Trigger = DAC_TRIGGER_T2_TRGO;
 	sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
 	if (HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_1) != HAL_OK)
 	{
@@ -467,40 +476,47 @@ static void MX_SPI2_Init(void)
 }
 
 /**
- * @brief TIM6 Initialization Function
+ * @brief TIM2 Initialization Function
  * @param None
  * @retval None
  */
-static void MX_TIM6_Init(void)
+static void MX_TIM2_Init(void)
 {
 
-	/* USER CODE BEGIN TIM6_Init 0 */
+	/* USER CODE BEGIN TIM2_Init 0 */
 
-	/* USER CODE END TIM6_Init 0 */
+	/* USER CODE END TIM2_Init 0 */
 
+	TIM_ClockConfigTypeDef sClockSourceConfig = {0};
 	TIM_MasterConfigTypeDef sMasterConfig = {0};
 
-	/* USER CODE BEGIN TIM6_Init 1 */
+	/* USER CODE BEGIN TIM2_Init 1 */
 
-	/* USER CODE END TIM6_Init 1 */
-	htim6.Instance = TIM6;
-	htim6.Init.Prescaler = 0;
-	htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim6.Init.Period = 1905;
-	htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-	if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
+	/* USER CODE END TIM2_Init 1 */
+	htim2.Instance = TIM2;
+	htim2.Init.Prescaler = 0;
+	htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+	htim2.Init.Period = 1905;
+	htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+	if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
 	{
 		Error_Handler();
 	}
 	sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
 	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-	if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
+	if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
 	{
 		Error_Handler();
 	}
-	/* USER CODE BEGIN TIM6_Init 2 */
+	/* USER CODE BEGIN TIM2_Init 2 */
 
-	/* USER CODE END TIM6_Init 2 */
+	/* USER CODE END TIM2_Init 2 */
 
 }
 
