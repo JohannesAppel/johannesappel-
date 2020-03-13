@@ -273,7 +273,7 @@ void EXTI9_5_IRQHandler(void)
 		}
 	}
 
-	if(Stop_Button == 1 && state != 1)
+	if(Stop_Button == 1 && state != 1 && enter != 1  && (HAL_GetTick() - trigger)>=10)
 	{
 		trigger = HAL_GetTick();
 		enter = 1;

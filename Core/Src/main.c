@@ -82,9 +82,6 @@ volatile uint8_t enter = 0;
 volatile uint8_t transmit = 0;
 
 uint16_t buffer[1024];
-uint16_t buffer1[1002];
-uint16_t buffer2[843];
-uint16_t buffer3[916];
 
 
 void HAL_DAC_ConvCpltCallbackCh1(DAC_HandleTypeDef* hdac)
@@ -154,7 +151,7 @@ int main(void)
 	/* USER CODE BEGIN WHILE */
 	while (1)
 	{
-		if(state == 2 && Button_1 == 0)
+		if(state == 2 && Button_1 == 0 && (HAL_GetTick() - trigger)>=10)
 		{
 			if(transmit == 1)
 			{
@@ -168,7 +165,7 @@ int main(void)
 				led_trigger = HAL_GetTick();
 			}
 		}
-		if(state == 3 && Button_2 == 0)
+		if(state == 3 && Button_2 == 0 && (HAL_GetTick() - trigger)>=10)
 		{
 			if(transmit == 1)
 			{
@@ -182,7 +179,7 @@ int main(void)
 				led_trigger = HAL_GetTick();
 			}
 		}
-		if(state == 4 && Button_3 == 0)
+		if(state == 4 && Button_3 == 0 && (HAL_GetTick() - trigger)>=10)
 		{
 			if(transmit == 1)
 			{
@@ -196,11 +193,10 @@ int main(void)
 				led_trigger = HAL_GetTick();
 			}
 		}
-		if(state == 5 && Button_1 == 0)
+		if(state == 5 && Button_1 == 0 && (HAL_GetTick() - trigger)>=10)
 		{
 			if(transmit == 1)
 			{
-				wave_fillbuffer(buffer1, 1, 1002);
 				HAL_TIM_Base_Start(&htim2);
 				HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, buffer, 1024, DAC_ALIGN_12B_R);
 				HAL_UART_Transmit(&huart2, Play1, 10, 1000);
@@ -212,11 +208,10 @@ int main(void)
 				led_trigger = HAL_GetTick();
 			}
 		}
-		if(state == 6 && Button_2 == 0)
+		if(state == 6 && Button_2 == 0 && (HAL_GetTick() - trigger)>=10)
 		{
 			if(transmit == 1)
 			{
-				wave_fillbuffer(buffer2, 2, 843);
 				HAL_TIM_Base_Start(&htim2);
 				HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, buffer, 1024, DAC_ALIGN_12B_R);
 				HAL_UART_Transmit(&huart2, Play2, 10, 1000);
@@ -228,11 +223,10 @@ int main(void)
 				led_trigger = HAL_GetTick();
 			}
 		}
-		if(state == 7 && Button_3 == 0)
+		if(state == 7 && Button_3 == 0 && (HAL_GetTick() - trigger)>=10)
 		{
 			if(transmit == 1)
 			{
-				wave_fillbuffer(buffer3, 3, 916);
 				HAL_TIM_Base_Start(&htim2);
 				HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, buffer, 1024, DAC_ALIGN_12B_R);
 				HAL_UART_Transmit(&huart2, Play3, 10, 1000);
